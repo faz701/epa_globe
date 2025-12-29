@@ -76,7 +76,10 @@ fetch(DATA_URL)
 // ======================
 function initGlobe(words) {
 
-  const globe = new ThreeGlobe()
+  console.log("INIT GLOBE", words);
+
+  const globe = new ThreeGlobe({ THREE });
+
     // 🌍 День / Ночь (NASA-стиль)
     .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg")
     .globeNightImageUrl("https://unpkg.com/three-globe/example/img/earth-night.jpg")
@@ -165,4 +168,5 @@ function initGlobe(words) {
 
 </body>
 </html>
+
 

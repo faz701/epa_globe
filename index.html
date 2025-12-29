@@ -42,7 +42,7 @@
 <div id="title">2025 год в нашей компании — одним словом</div>
 <div id="hint">3D визуализация • режим презентации</div>
 
-<!-- ✅ СТАБИЛЬНЫЕ CDN (ВАЖНО) -->
+<!-- CDN -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three-globe@2.27.3/dist/three-globe.min.js"></script>
 
@@ -51,11 +51,11 @@
 // НАСТРОЙКИ
 // ======================
 const DATA_URL = "https://script.google.com/macros/s/AKfycbzxZeL9XhdOdlk1BeSpBsVGZ_62fQHS-TODEbKcfwGIx67-DMA-eCmZosM-SkCrRHsH/exec";
-const PRESENTATION_MODE = true;   // true = ТВ / презентация
+const PRESENTATION_MODE = true;
 const WORD_COLOR = "#facc15";
 
 // ======================
-// FALLBACK (если API временно недоступен)
+// FALLBACK
 // ======================
 const fallbackData = [
   { text: "Рост", value: 5 },
@@ -64,7 +64,7 @@ const fallbackData = [
 ];
 
 // ======================
-// ЗАГРУЗКА ДАННЫХ
+// LOAD DATA
 // ======================
 fetch(DATA_URL)
   .then(r => r.json())
@@ -72,7 +72,7 @@ fetch(DATA_URL)
   .catch(() => initGlobe(fallbackData));
 
 // ======================
-// ИНИЦИАЛИЗАЦИЯ ГЛОБУСА
+// INIT GLOBE
 // ======================
 function initGlobe(words) {
 
@@ -80,28 +80,29 @@ function initGlobe(words) {
 
   const globe = new ThreeGlobe({ THREE });
 
-globe.globeImageUrl(
-  "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
-);
+  // 🌍 Земля
+  globe.globeImageUrl(
+    "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+  );
 
-globe.bumpImageUrl(
-  "https://unpkg.com/three-globe/example/img/earth-topology.png"
-);
+  globe.bumpImageUrl(
+    "https://unpkg.com/three-globe/example/img/earth-topology.png"
+  );
 
-    // 🌫 Атмосфера
-    .showAtmosphere(true)
-    .atmosphereColor("#60a5fa")
-    .atmosphereAltitude(0.25)
+  // 🌫 Атмосфера
+  globe.showAtmosphere(true);
+  globe.atmosphereColor("#60a5fa");
+  globe.atmosphereAltitude(0.25);
 
-    // 🔤 Слова на поверхности
-    .labelsData(words)
-    .labelLat(() => Math.random() * 180 - 90)
-    .labelLng(() => Math.random() * 360 - 180)
-    .labelText(d => d.text)
-    .labelSize(d => 1.1 + d.value * 0.25)
-    .labelColor(() => WORD_COLOR)
-    .labelDotRadius(0.35)
-    .labelAltitude(0.018);
+  // 🔤 Слова
+  globe.labelsData(words);
+  globe.labelLat(() => Math.random() * 180 - 90);
+  globe.labelLng(() => Math.random() * 360 - 180);
+  globe.labelText(d => d.text);
+  globe.labelSize(d => 1.1 + d.value * 0.25);
+  globe.labelColor(() => WORD_COLOR);
+  globe.labelDotRadius(0.35);
+  globe.labelAltitude(0.018);
 
   // ======================
   // SCENE
@@ -109,7 +110,7 @@ globe.bumpImageUrl(
   const scene = new THREE.Scene();
   scene.add(globe);
 
-  // 🎥 Камера
+  // CAMERA
   const camera = new THREE.PerspectiveCamera(
     55,
     window.innerWidth / window.innerHeight,
@@ -118,21 +119,20 @@ globe.bumpImageUrl(
   );
   camera.position.z = 520;
 
-  // 🖥 Renderer
+  // RENDERER
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   document.body.appendChild(renderer.domElement);
 
-  // 💡 Свет (реализм)
+  // LIGHT
   scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-
   const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
   sunLight.position.set(300, 200, 300);
   scene.add(sunLight);
 
   // ======================
-  // АНИМАЦИЯ
+  // ANIMATION
   // ======================
   let zoom = 520;
   let angle = 0;
@@ -140,14 +140,11 @@ globe.bumpImageUrl(
   (function animate() {
     requestAnimationFrame(animate);
 
-    // вращение Земли
     globe.rotation.y += 0.0016;
 
-    // плавный зум
     if (zoom > 360) zoom -= 0.05;
     camera.position.z = zoom;
 
-    // 🎥 режим презентации
     if (PRESENTATION_MODE) {
       angle += 0.0008;
       camera.position.x = Math.sin(angle) * 120;
@@ -158,9 +155,7 @@ globe.bumpImageUrl(
     renderer.render(scene, camera);
   })();
 
-  // ======================
   // RESIZE
-  // ======================
   window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -171,7 +166,3 @@ globe.bumpImageUrl(
 
 </body>
 </html>
-
-
-
-

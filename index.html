@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>2025 — One Word | 3D Globe</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    margin: 0;
+    background: radial-gradient(circle at center, #020617, #000);
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+  }
+
+  #title {
+    position: absolute;
+    top: 24px;
+    width: 100%;
+    text-align: center;
+    color: #e5e7eb;
+    font-size: 28px;
+    font-weight: 600;
+    z-index: 10;
+    letter-spacing: .5px;
+  }
+
+  #hint {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    color: #64748b;
+    font-size: 12px;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<div id="title">2025 год в нашей компании — одним словом</div>
+<div id="hint">Режим презентации • 3D визуализация</div>
+
+<script src="https://unpkg.com/three"></script>
+<script src="https://unpkg.com/three-globe"></script>
+
+<script>
+const DATA_URL = "ВСТАВЬ_URL_APPS_SCRIPT";
+
+// 🔧 НАСТРОЙКИ WOW
+const PRESENTATION_MODE = true; // true = автокамера (ТВ/презентация)
+const GLOW_COLOR = '#facc15';
+
+fetch(DATA_URL)
+.then(res => res.json())
+.then(words => {
+
+  const globe = new ThreeGlobe()
+    // 🌍 День / Ночь (NASA стиль)
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+    .globeNightImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+    .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+
+    // 🌫 Атмосфера
+    .showAtmosphere(true)
+    .atmosphereColor('#60a5fa')
+    .atmosphereAltitude(0.25)
+
+    // 🔤 Слова
+    .labelsData(words)
+    .labelLat(() => Math.random() * 180 - 90)
+    .labelLng(() => Math.random() * 360 - 180)
+    .labelText(d => d.text)
+    .labelSize(d => 1.1 + d.value * 0.25)
+    .labelColor(() => GLOW_COLOR)
+    .labelDotRadius(0.35)
+    .labelAltitude(0.018);
+
+  const scene = new THREE.Scene();
+  scene.add(globe);
+
+  // 🎥 Камера (cinematic)
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 2000);
+  camera.position.z = 520;
+
+  // 🖥 Рендер
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  document.body.appendChild(renderer.domElement);
+
+  // 💡 Свет (NASA-реализм)
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+  const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+  sunLight.position.set(300, 200, 300);
+  scene.add(sunLight);
+
+  // 🖱 Hover-эффект
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+  let hovered = null;
+
+  window.addEventListener('mousemove', e => {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  });
+
+  // 🎥 Анимация
+  let zoom = 520;
+  let angle = 0;
+
+  (function animate() {
+    requestAnimationFrame(animate);
+
+    // 🌍 Вращение Земли
+    globe.rotation.y += 0.0016;
+
+    // 🌍 Медленное приближение камеры
+    if (zoom > 360) zoom -= 0.05;
+    camera.position.z = zoom;
+
+    // 🎥 Режим презентации
+    if (PRESENTATION_MODE) {
+      angle += 0.0008;
+      camera.position.x = Math.sin(angle) * 120;
+      camera.position.y = Math.sin(angle * 0.7) * 60;
+      camera.lookAt(scene.position);
+    }
+
+    // 🖱 Hover
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    if (intersects.length && hovered !== intersects[0].object) {
+      hovered = intersects[0].object;
+      hovered.material.emissive = new THREE.Color(GLOW_COLOR);
+    }
+
+    renderer.render(scene, camera);
+  })();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+});
+</script>
+</body>
+</html>
